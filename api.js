@@ -4,7 +4,7 @@ const app = express();
 
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-    socketPath : '/cloudsql/my-project-12345:us-central1:mydatabase',
+    socketPath : '/cloudsql/mysqlnodejs:europe-west1:mysql-api',
     user      : 'balink',
     password  : '',
     database  : 'MyDatabase'
