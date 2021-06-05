@@ -3,24 +3,24 @@ const app = express();
 
 
 var mysql = require('mysql');
-/*var connection = mysql.createConnection({
-host     : '35.195.147.220',
-database : 'MyDatabase',
-port     : '3306',
-user     : 'balink',
-password : '',
-});*/
-let config = {
+var connection = mysql.createConnection({
+    socketPath : '/cloudsql/my-project-12345:us-central1:mydatabase',
+    user      : 'balink',
+    password  : '',
+    database  : 'MyDatabase'
+  });
+/*let config = {
      user: 'balink',
      database: 'MyDatabase',
      password: '',
+     socketPath: '/cloudsql/my-project-12345:us-central1:mydatabase',
 }
 
  if ('mysqlnodejs:europe-west1:mysql-api') {
    config.socketPath = `/cloudsql/$mysqlnodejs:europe-west1:mysql-api`;
  }
 
-let connection = mysql.createConnection(config);
+let connection = mysql.createConnection(config);*/
 
 
   
