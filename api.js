@@ -35,7 +35,7 @@ connection.connect(function(err) {
   });
 app.get('/', (req, res) => {
     //res.send('Hello World!');
-    str = 'SELECT * FROM Persons WHERE id=1;';
+    str = 'SELECT * FROM Persons WHERE id=2;';
     connection.query(str, function (err, m) {
         if (err) return res.send(err);
         res.send(m)
@@ -43,19 +43,16 @@ app.get('/', (req, res) => {
   });
 
 app.get("/Person", (req, res) => {
-    if (req.query.id){
         str = 'SELECT * FROM Persons WHERE id='+req.query.id+';';
         //connection.connect();
-        connection.query(str, function (err, result) {
+        let x = connection.query(str, function (err, result) {
         if (err){
-            return res.send(err);
+            return err;
         }
-        return res.send(rows)
+             return rows;
         });
         connection.end();
-        return;
-    }
-    res.json("error id ")
+        res.json(x)
    });
 app.post("/Person", (req,res) => {
     str = "INSERT INTO Persons (firstName,lastName,phoneNumber,city,country) VALUES ( '" ;
