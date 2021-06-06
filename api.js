@@ -188,7 +188,7 @@ app.post("/Animal", (req,res) => {
             if (err){
                return res.json(err);
             }   
-                return res.json("The Person was created Successfully , the person id is: "+Object.values(JSON.parse(JSON.stringify(result)))[0].id);
+                return res.json("The Animal was created Successfully , the Animal id is: "+Object.values(JSON.parse(JSON.stringify(result)))[0].id);
             });
            
         });
