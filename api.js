@@ -1,4 +1,3 @@
-//const e = require('express');
 const express = require('express');
 const app = express();
 
@@ -11,7 +10,7 @@ var connection = mysql.createConnection({
     database  : 'MyDatabase'
   });
 
-  /*var mysql = require('mysql');
+/*var mysql = require('mysql');
   var connection = mysql.createConnection({
     host     : '35.195.147.220',
     database : 'MyDatabase',
@@ -22,178 +21,241 @@ var connection = mysql.createConnection({
 */
 app.use(express.json());
 var str;
-var p;
-var result;
-var counter = 3;
 connection.connect(function(err) {
     if (err) {
         return err;
     }
-    else{
-        console.log("Connected!");
-    }
+    console.log("Connected!");
   });
 app.get('/', (req, res) => {
-    //res.send('Hello World!');
-    str = 'SELECT * FROM Persons WHERE id=2;';
-    connection.query(str, function (err, m) {
-        if (err) return res.send(err);
-        res.send(m)
-    });
+    res.send("Hello it's my Api!");
   });
 
 app.get("/Person", (req, res) => {
+    if(req.query.id){
         str = 'SELECT * FROM Persons WHERE id='+req.query.id+';';
-        //connection.connect();
-        let x = connection.query(str, function (err, result) {
+        return connection.query(str, function (err, result) {
         if (err){
-            return err;
+            return res.json(err);
         }
-             return rows;
+        let r = Object.values(JSON.parse(JSON.stringify(result)))
+        if(!r.length){
+            return res.json("person with id: " + req.query.id + " doesn’t exist");
+        }
+        return res.json(result)
         });
-        connection.end();
-        res.json(x)
+    }
+    else{
+        res.json("The given field isn’t available .Please use 'id' as identifier ")
+    }
    });
 app.post("/Person", (req,res) => {
     str = "INSERT INTO Persons (firstName,lastName,phoneNumber,city,country) VALUES ( '" ;
+    var str2 = "select id from Persons where firstName='"
     if (req.body.firstName == undefined){
          res.json("error on firstname")
     }
     str+= req.body.firstName+"','";
+    str2+=req.body.firstName+"' AND lastName='";
     if (req.body.lastName == undefined){
         return res.json("error on lastName")
     }
     str+= req.body.lastName+"','";
+    str2+=req.body.lastName+"' AND phoneNumber='";
     if (req.body.phoneNumber == undefined){
         return res.json("error on phoneNumber")
     }
     str+= req.body.phoneNumber+"','";
+    str2+=req.body.phoneNumber+"' AND city='";
     if (req.body.city == undefined){
         return res.json("error on city")
     }
     str+= req.body.city+"','";
+    str2+=req.body.city+"' AND country='";
     if (req.body.country == undefined){
         return res.json("error on country")
     }
     str+= req.body.country+"' );";
-    //+req.body.firstName+"','"+ req.body.lastName+"','"+req.body.phoneNumber+"','"+req.body.city +"','"+req.body.country + "' );";
-    sendquery(str,'succeed the id for the person id: ',res);
+    str2+=req.body.country+"';";
+    connection.query(str2,str, function (err, result) {
+        if (err){
+            return res.json(err)  
+        }
+        var table = Object.values(JSON.parse(JSON.stringify(result)))
+        if(table.length>0){
+
+                return res.json("Person is already created the person id is: "+Object.values(JSON.parse(JSON.stringify(table)))[0].id);
+        }
+        connection.query(str, function (err, result) {
+        if (err){
+           return res.json(err);
+        }
+            connection.query(str2, function (err, result) {
+            if (err){
+               return res.json(err);
+            }   
+                return res.json("created person, the id is: "+Object.values(JSON.parse(JSON.stringify(result)))[0].id);
+            });
+           
+        });
+       
+    });
+            
    });
+    
 app.delete("/Person", (req, res, next) => {
     if(req.query.id){
         str = 'DELETE FROM Persons WHERE id ='+req.query.id+';';
-        return sendquery(str,'deleted succeed',res);
+        connection.query(str, function (err, result) {
+            if (err){
+                return res.json(err);
+            }
+                return res.json("Person was deleted Successfully");
+            });
+       }
+    else{
+        res.json("The given field isn’t available .Please use 'id' as identifier ")
     }
-    res.json("error id ")
    });
 
-
-//Animals table
 app.get("/Animal", (req, res) => {
     if(req.query.id){
         str = 'SELECT * FROM Animals WHERE id='+req.query.id+';';
-        return sendquery(str,0,res)
+        connection.query(str, function (err, result) {
+            if (err){
+                return res.json(err);
+            }
+            let r = Object.values(JSON.parse(JSON.stringify(result)))
+            if(!r.length){
+                return res.json("animal isn't exist");
+            }
+            return res.json(result)
+            });
     }
-    res.json("error id ")
+    else{
+        res.json("error id ")
+    }
    });
 app.post("/Animal", (req,res) => {
     
     str = "INSERT INTO Animals (name, species) VALUES ('";
+    var str2 = "select id from Animals where name='"
     if (req.body.name == undefined){
         return res.json("error on name")
     }
     str+= req.body.name + "','";
+    str2+=req.body.name+"' AND species='";
     if (req.body.species == undefined){
         return res.json("error on species")
     }
     str+= req.body.species  +"' );";
-    sendquery(str,'succeed the id for the person id: ',res);
+    str2+=req.body.species+"' ;";
+    return connection.query(str2,str, function (err, result) {
+        if (err){
+            return res.json(err)  
+        }
+        var table = Object.values(JSON.parse(JSON.stringify(result)))
+        if(table.length>0){
+                return res.json("Animal is already created");
+        }
+        connection.query(str, function (err, result) {
+        if (err){
+           return res.json(err);
+        }
+            connection.query(str2, function (err, result) {
+            if (err){
+               return res.json(err);
+            }   
+                return res.json("The Person was created Successfully , the person id is: "+Object.values(JSON.parse(JSON.stringify(result)))[0].id);
+            });
+           
+        });
+       
+    });
    });
+
 app.post("/Animal/update", (req, res, next) => {
-    if (req.query.id){
-        str = 'UPDATE Animals SET WHERE id ='+req.query.id+';';
-        return  sendquery(str,'update succeed',res);
+    if (req.body.id){
+        str = "UPDATE Animals SET name = '"+req.body.newName+"' WHERE id ="+req.body.id+';';
+        connection.query(str, function (err, result) {
+            if (err){
+                return res.json(err);
+            }
+            return res.json("updated animal")
+            });
     }
-    res.json("error id ")
-
+    else {
+        res.json("error id ")
+    }
 
    });
 
-//memberships table
+
 app.get("/Memberships", (req, res) => {
     if (req.query.id){
-        str = 'SELECT * FROM Memberships WHERE IdPerson='+req.query.id+';';
-        return sendquery(str,0,req,res)
+        str = 'SELECT * FROM Memberships WHERE personId='+req.query.id+';';
+        return connection.query(str, function (err, result) {
+            if (err){
+                return res.json(err);
+            }
+            let r = Object.values(JSON.parse(JSON.stringify(result)))
+            if(!r.length){
+                return res.json("Memberships doesn't exist");
+            }
+            return res.json(result)
+            });
     }   
-    res.json("error id ")
+    else {
+        res.json("error id ")
+    }
    });
-app.post("/Memberships", (req,res) => {
-    str = 'SELECT * FROM Memberships WHERE IdAnimal='+req.body[1]+';'; 
-    p = "";
-    connection.connect();
-    connection.query(str, function(err, rows, fields) {
 
+app.post("/Memberships", (req,res) => {
+    str = "INSERT INTO Memberships (personId,animalId) VALUES ( "+ req.body.personId+"," + req.body.animalId+");"
+    return connection.query(str, function(err, result) {
         if (err){
-            console.log("error ")
+            return res.json(err);
+        }  
+        str = 'SELECT * FROM Memberships WHERE animalId='+req.body.animalId+';'; 
+        connection.query(str, function(err, result) {
+            if (err){
+                return res.json(err);
+            }  
+            res.json("Membership was created Successfully");  
+        });  
+    });
+    /*str = 'SELECT * FROM Memberships WHERE animalId='+req.body.animalId+';'; 
+    connection.query(str, function (err, result)  {
+        if (err){
             return res.json(err);
         }
-        var q = Object.values(JSON.parse(JSON.stringify(rows)))
+        var q = Object.values(JSON.parse(JSON.stringify(result)))
+     
         if(!q.length){
-            str = "INSERT INTO Memberships (personId,animalId) VALUES ( "+ req.body[0]+"," + req.body[1]+" );"
-                /*str = 'SELECT * FROM Persons WHERE id='+req.body[0]+';';
-                connection.query(str, function(err, p1, fields) {
+            str = "INSERT INTO Memberships (personId,animalId) VALUES ( "+ req.body.personId+"," + req.body.animalId+");"
+                return connection.query(str, function(err, result) {
                     if (err){
-                        return console.log(err);
+                        return res.json(err);
                     }  
-                    result = Object.values(JSON.parse(JSON.stringify(p1)))[0];
-                    p+= result.id +", '"+ result.firstName +"', '"+ result.lastName +"', '"+ result.phoneNumber  +"', '"+ result.city +"', '"+ result.country +"',";
-                });
-                str = 'SELECT * FROM Animals WHERE id='+req.body[1]+';';
-                connection.query(str, function(err, p2, fields) {
-                    if (err){
-                        return console.log(err);
-                    }
-                    result = Object.values(JSON.parse(JSON.stringify(p2)))[0];
-                    p+= result.id +", '"+result.name +"', '"+ result.species+"'";
-                    console.log(p);
-                    
-                    str = 'INSERT INTO Memberships (IdPerson, PersonName, PersonLastName,phoneNumber,city,country,IdAnimal,AnimalName,species) VALUES (' + p + ');';
-                
-                    connection.query(str, function(err, rows, fields) {
+                    str = 'SELECT * FROM Memberships WHERE animalId='+req.body.animalId+';'; 
+                    connection.query(str, function(err, result) {
                         if (err){
-                            return console.log(err);
-                        } 
-                        return res.json("success");
+                            return res.json(err);
+                        }  
+                        res.json("Membership was created Successfully");  
                     });  
-        
-                }); */
+                });
+               
         
         } 
         else {
-            return res.json("already exist");
+            return res.json("The wanted membership exists");
         }
-    });
-    connection.end();
+    });*/
  });
   
 
-//connection.end();
 
-function sendquery(str,message,res){
-    connection.connect();
-    connection.query(str, function(err, rows, fields) {
-    if (err){
-        return err;
-    } 
-    if (message==0){
-        return rows
-    }
-    else{
-        return message;
-    }
-    });
-    
-}
 // Listen to the App Engine-specified port, or 8080 otherwise
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
